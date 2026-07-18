@@ -1,0 +1,5 @@
+{"type":"assistant","message":{"usage":{"input_tokens":100,"output_tokens":5000,"cache_read_input_tokens":2000,"cache_creation":{"ephemeral_5m_input_tokens":1000,"ephemeral_1h_input_tokens":500}}}}
+{"type":"user","message":{"content":"hello"}}
+not valid json at all
+{"type":"assistant","message":{"usage":{"input_tokens":50,"output_tokens":3000,"cache_read_input_tokens":1000,"cache_creation_input_tokens":800}}}
+{"type":"assistant","message":{"usage":{"input_tokens":10,"output_tokens":2000,"cache_read_input_tokens":500,"cache_creation":{"ephemeral_5m_input_tokens":300,"ephemeral_1h_input_tokens":0}}}}
