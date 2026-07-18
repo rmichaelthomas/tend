@@ -58,3 +58,52 @@ def test_stop_hook_exits_zero_with_empty_stdin():
         timeout=5,
     )
     assert result.returncode == 0
+
+
+def test_draw_increments_streak_only_when_stalk_had_urchins(tmp_path, monkeypatch):
+    state_path = tmp_path / "state.json"
+    world = state.World()
+    world.stalks[2].urchins = 1
+    state.save(world, state_path)
+
+    monkeypatch.setattr(cli, "_read_key", lambda: "3")
+    monkeypatch.setattr(cli.feel, "animate_squish", lambda *a, **k: None)
+
+    cli.cmd_draw(state_path=state_path)
+
+    updated = state.load(state_path)
+    assert updated.streak == 1
+    assert updated.stalks[2].urchins == 0
+
+
+def test_draw_does_not_increment_streak_on_empty_squish(tmp_path, monkeypatch):
+    state_path = tmp_path / "state.json"
+    world = state.World()
+    state.save(world, state_path)
+
+    monkeypatch.setattr(cli, "_read_key", lambda: "1")
+
+    cli.cmd_draw(state_path=state_path)
+
+    updated = state.load(state_path)
+    assert updated.streak == 0
+
+
+def test_draw_never_calls_engine_tick(tmp_path, monkeypatch):
+    state_path = tmp_path / "state.json"
+    world = state.World()
+    world.stalks[0].urchins = 1
+    state.save(world, state_path)
+
+    monkeypatch.setattr(cli, "_read_key", lambda: "1")
+    monkeypatch.setattr(cli.feel, "animate_squish", lambda *a, **k: None)
+
+    called = {"tick": False}
+
+    def fake_tick(*a, **k):
+        called["tick"] = True
+
+    monkeypatch.setattr(cli.engine, "tick", fake_tick)
+
+    cli.cmd_draw(state_path=state_path)
+    assert called["tick"] is False
