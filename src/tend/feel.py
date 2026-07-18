@@ -52,15 +52,18 @@ def animate_squish(console, world, index, render_frame, cleared_count: int) -> N
     if not steps:
         return
 
+    neighbors = [i for i in (index - 1, index + 1) if 0 <= i < len(world.stalks)]
+
     with Live(console=console, transient=True, refresh_per_second=max(1, 1000 // max(STEP_MS, 1))) as live:
+        elapsed_ms = 0
         for t in steps:
             brightness = {index: t}
-            if cleared_count >= 3:
-                for i, _ in enumerate(world.stalks):
-                    if i != index:
-                        brightness[i] = t * 0.4
+            if cleared_count >= 3 and elapsed_ms <= THUMP_NEIGHBOR_MS:
+                for n in neighbors:
+                    brightness[n] = t * 0.4
             live.update(render_frame(world, brightness=brightness))
             time.sleep(STEP_MS / 1000)
+            elapsed_ms += STEP_MS
 
 
 def animate_loss(console, world, index, render_frame) -> None:
