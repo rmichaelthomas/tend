@@ -40,6 +40,11 @@ def build(world: World) -> str:
             return f"{n} washed out. seeds -{world.seeds_spent_this_tick}. {m} is next."
         return f"{n} washed out. seeds -{world.seeds_spent_this_tick}."
 
+    dying = [i for i, s in enumerate(world.stalks) if s.base == DYING]
+    if dying:
+        n = min(dying) + 1
+        return f"{n} goes next tick unless you press {n}."
+
     if len(world.spawned_indices_this_tick) >= MANY_URCHINS_THRESHOLD:
         count = len(world.spawned_indices_this_tick)
         word = NUMBER_WORDS.get(count, str(count))
@@ -49,7 +54,7 @@ def build(world: World) -> str:
 
     chewed = sorted(world.chewed_this_tick)
     if len(chewed) >= 2:
-        worst = max(chewed, key=lambda i: world.stalks[i].base)
+        worst = max(chewed, key=lambda i: world.stalks[i].urchins)
         names = _join([str(i + 1) for i in chewed])
         verb = "both" if len(chewed) == 2 else "all"
         return f"{names} {verb} chewed. {worst + 1} is worse."
@@ -57,11 +62,6 @@ def build(world: World) -> str:
     if len(chewed) == 1:
         n = chewed[0] + 1
         return f"{n} is being chewed. press {n}."
-
-    dying = [i for i, s in enumerate(world.stalks) if s.base == DYING]
-    if dying:
-        n = min(dying) + 1
-        return f"{n} goes next tick unless you press {n}."
 
     if world.quiet_ticks >= QUIET_TICKS_THRESHOLD:
         return "quiet. nothing's happened in a while."

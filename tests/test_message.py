@@ -44,7 +44,9 @@ def test_priority_4_many_urchins_spawned():
 def test_priority_5_two_chewed():
     world = _world(chewed_this_tick=[1, 5])
     world.stalks[1].base = CHEWED
-    world.stalks[5].base = DYING
+    world.stalks[1].urchins = 1
+    world.stalks[5].base = CHEWED
+    world.stalks[5].urchins = 3
     assert build(world) == "2 and 6 both chewed. 6 is worse."
 
 
