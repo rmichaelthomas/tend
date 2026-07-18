@@ -51,6 +51,8 @@ def cmd_draw(state_path: Path | None = None) -> None:
         if had_urchins:
             world.streak += 1
             feel.animate_squish(console, world, index, render.render_frame, cleared_count=1)
+        world.chewed_this_tick = [i for i in world.chewed_this_tick if i != index]
+        world.spawned_indices_this_tick = [i for i in world.spawned_indices_this_tick if i != index]
         world.last_event = message.build(world)
         state.save(world, state_path)
         tier = feel.streak_tier(world.streak)

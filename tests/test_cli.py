@@ -107,3 +107,24 @@ def test_draw_never_calls_engine_tick(tmp_path, monkeypatch):
 
     cli.cmd_draw(state_path=state_path)
     assert called["tick"] is False
+
+
+def test_draw_message_is_not_stale_after_clearing_the_only_chewed_stalk(tmp_path, monkeypatch):
+    from tend import message
+    from tend.state import CHEWED
+
+    state_path = tmp_path / "state.json"
+    world = state.World()
+    world.stalks[2].base = CHEWED
+    world.stalks[2].urchins = 1
+    world.chewed_this_tick = [2]
+    state.save(world, state_path)
+
+    monkeypatch.setattr(cli, "_read_key", lambda: "3")
+    monkeypatch.setattr(cli.feel, "animate_squish", lambda *a, **k: None)
+
+    cli.cmd_draw(state_path=state_path)
+
+    updated = state.load(state_path)
+    assert updated.last_event != "3 is being chewed. press 3."
+    assert updated.last_event == message.build(updated)
