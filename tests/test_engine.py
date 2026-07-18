@@ -99,10 +99,16 @@ def test_streak_never_referenced_inside_engine_module():
 
 def test_identical_world_state_at_streak_0_and_streak_12_except_streak_itself():
     world_a = World()
+    for s in world_a.stalks[1:]:
+        s.base = DEAD
+        s.height = 0
     world_a.stalks[0].urchins = 1
     world_a.streak = 0
 
     world_b = World()
+    for s in world_b.stalks[1:]:
+        s.base = DEAD
+        s.height = 0
     world_b.stalks[0].urchins = 1
     world_b.streak = 12
 

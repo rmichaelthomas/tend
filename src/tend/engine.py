@@ -13,9 +13,6 @@ SHADE_THRESHOLD = 150_000
 
 
 def tick(world: World, delta: dict) -> World:
-    # Seed randomness based on day for deterministic behavior
-    random.seed(world.day)
-
     input_tokens = delta.get("input", 0)
     output_tokens = delta.get("output", 0)
     cache_read = delta.get("cache_read", 0)
