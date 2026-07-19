@@ -25,8 +25,14 @@ def _read_key() -> str:
     import termios
     import tty
 
-    fd = sys.stdin.fileno()
-    old = termios.tcgetattr(fd)
+    try:
+        fd = sys.stdin.fileno()
+        old = termios.tcgetattr(fd)
+    except (termios.error, OSError):
+        # stdin isn't a real TTY (e.g. run non-interactively) — no raw mode
+        # possible, so no live keypress is available. Read whatever's there
+        # (EOF on a closed/redirected stdin returns "" without blocking).
+        return sys.stdin.read(1)
     try:
         tty.setraw(fd)
         ch = sys.stdin.read(1)
@@ -41,10 +47,10 @@ def cmd_draw(state_path: Path | None = None) -> None:
     world = state.load(state_path)
     console = Console()
     tier = feel.streak_tier(world.streak)
-    console.print(render.render_frame(world, tier=tier))
+    sys.stdout.write(render.render_frame(world, tier=tier))
 
     key = _read_key()
-    if key in "1234567":
+    if key and key in "1234567":
         index = int(key) - 1
         had_urchins = world.stalks[index].urchins > 0
         engine.squish(world, index)
@@ -56,7 +62,7 @@ def cmd_draw(state_path: Path | None = None) -> None:
         world.last_event = message.build(world)
         state.save(world, state_path)
         tier = feel.streak_tier(world.streak)
-        console.print(render.render_frame(world, tier=tier))
+        sys.stdout.write(render.render_frame(world, tier=tier))
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -9,6 +9,7 @@ from __future__ import annotations
 import time
 
 from rich.live import Live
+from rich.text import Text
 
 STREAK_TIERS = [3, 6, 10]
 
@@ -61,7 +62,7 @@ def animate_squish(console, world, index, render_frame, cleared_count: int) -> N
             if cleared_count >= 3 and elapsed_ms <= THUMP_NEIGHBOR_MS:
                 for n in neighbors:
                     brightness[n] = t * 0.4
-            live.update(render_frame(world, brightness=brightness))
+            live.update(Text.from_ansi(render_frame(world, brightness=brightness)))
             time.sleep(STEP_MS / 1000)
             elapsed_ms += STEP_MS
 
@@ -73,5 +74,5 @@ def animate_loss(console, world, index, render_frame) -> None:
 
     with Live(console=console, transient=True, refresh_per_second=max(1, 1000 // max(STEP_MS, 1))) as live:
         for t in steps:
-            live.update(render_frame(world, loss_index=index, loss_progress=1 - t))
+            live.update(Text.from_ansi(render_frame(world, loss_index=index, loss_progress=1 - t)))
             time.sleep(STEP_MS / 1000)

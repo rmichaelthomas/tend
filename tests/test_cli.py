@@ -128,3 +128,57 @@ def test_draw_message_is_not_stale_after_clearing_the_only_chewed_stalk(tmp_path
     updated = state.load(state_path)
     assert updated.last_event != "3 is being chewed. press 3."
     assert updated.last_event == message.build(updated)
+
+
+def test_read_key_falls_back_gracefully_when_stdin_is_not_a_tty(monkeypatch):
+    import io
+
+    import termios
+
+    def fake_tcgetattr(fd):
+        raise termios.error(19, "Operation not supported by device")
+
+    monkeypatch.setattr("termios.tcgetattr", fake_tcgetattr)
+    monkeypatch.setattr(cli.sys, "stdin", io.StringIO(""))
+
+    assert cli._read_key() == ""
+
+
+def test_draw_header_not_corrupted_by_large_spend_number(tmp_path, monkeypatch, capsys):
+    state_path = tmp_path / "state.json"
+    world = state.World()
+    world.spend = 78_488_588
+    world.seeds = 7635
+    state.save(world, state_path)
+
+    monkeypatch.setattr(cli, "_read_key", lambda: "x")
+
+    cli.cmd_draw(state_path=state_path)
+
+    captured = capsys.readouterr()
+    first_line = captured.out.splitlines()[0]
+    assert "78,488,588" in first_line
+    assert "seeds" in first_line
+    assert "7635" in first_line
+
+
+def test_draw_does_not_crash_and_does_not_squish_when_stdin_is_not_a_tty(tmp_path, monkeypatch):
+    import io
+
+    import termios
+
+    state_path = tmp_path / "state.json"
+    world = state.World()
+    world.stalks[0].urchins = 1
+    state.save(world, state_path)
+
+    def fake_tcgetattr(fd):
+        raise termios.error(19, "Operation not supported by device")
+
+    monkeypatch.setattr("termios.tcgetattr", fake_tcgetattr)
+    monkeypatch.setattr(cli.sys, "stdin", io.StringIO(""))
+
+    cli.cmd_draw(state_path=state_path)
+
+    updated = state.load(state_path)
+    assert updated.stalks[0].urchins == 1
