@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 
 from tend import cli, state
+from tend.state import DEAD
 
 FIXTURE = Path(__file__).parent / "fixtures" / "transcript_fixture.jsonl"
 HOOK = Path(__file__).resolve().parents[1] / "hooks" / "stop_hook.sh"
@@ -234,6 +235,111 @@ def test_main_squish_subcommand_parses_stalk_and_squishes(tmp_path, monkeypatch)
     cli.main(["squish", "6"])
 
     assert captured_index["index"] == 5
+
+
+def test_status_text_mode_never_mutates_state(tmp_path, capsys):
+    state_path = tmp_path / "state.json"
+    world = state.World()
+    world.stalks[1].urchins = 2
+    state.save(world, state_path)
+    before = state.load(state_path)
+
+    cli.cmd_status(False, state_path=state_path)
+
+    after = state.load(state_path)
+    assert after == before
+    captured = capsys.readouterr()
+    assert captured.out != ""
+
+
+def test_status_json_mode_never_mutates_state_and_reports_total_urchins(tmp_path, capsys):
+    state_path = tmp_path / "state.json"
+    history_path = tmp_path / "history.json"
+    world = state.World()
+    world.stalks[1].urchins = 2
+    world.stalks[4].urchins = 3
+    state.save(world, state_path)
+    before = state.load(state_path)
+
+    cli.cmd_status(True, state_path=state_path, history_path=history_path)
+
+    after = state.load(state_path)
+    assert after == before
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert payload["total_urchins"] == 5
+    assert payload["world"]["day"] == before.day
+    assert "history" in payload
+    assert payload["history"]["total_ticks"] == 0
+
+
+def test_tick_records_history_across_deaths_revivals_and_urchins(tmp_path):
+    state_path = tmp_path / "state.json"
+    history_path = tmp_path / "history.json"
+    world = state.World()
+    world.stalks[0].base = DEAD
+    world.stalks[0].height = 0
+    world.seeds = 100
+    state.save(world, state_path)
+
+    cli.cmd_tick(str(FIXTURE), state_path=state_path, history_path=history_path)
+
+    history = state.load_history(history_path)
+    assert history.total_ticks == 1
+    updated = state.load(state_path)
+    assert history.total_revivals == len(updated.revived_this_tick)
+    assert history.total_urchins_spawned == len(updated.spawned_indices_this_tick)
+
+
+def test_tick_records_biggest_dieoff(tmp_path):
+    state_path = tmp_path / "state.json"
+    history_path = tmp_path / "history.json"
+    world = state.World()
+    world.stalks[0].base = DEAD
+    world.stalks[0].height = 3
+    world.stalks[1].base = DEAD
+    world.stalks[1].height = 2
+    state.save(world, state_path)
+
+    empty_fixture = tmp_path / "empty.jsonl"
+    empty_fixture.write_text("")
+    cli.cmd_tick(str(empty_fixture), state_path=state_path, history_path=history_path)
+
+    history = state.load_history(history_path)
+    updated = state.load(state_path)
+    assert history.biggest_dieoff == len(updated.died_this_tick)
+    assert history.biggest_dieoff == 2
+    assert history.biggest_dieoff_day == updated.day
+
+
+def test_squish_records_history_only_when_had_urchins(tmp_path):
+    state_path = tmp_path / "state.json"
+    history_path = tmp_path / "history.json"
+    world = state.World()
+    world.stalks[2].urchins = 1
+    state.save(world, state_path)
+
+    cli.cmd_squish(2, state_path=state_path, history_path=history_path)
+
+    history = state.load_history(history_path)
+    assert history.total_squishes == 1
+    assert history.longest_squish_streak == 1
+
+    cli.cmd_squish(0, state_path=state_path, history_path=history_path)
+    history_again = state.load_history(history_path)
+    assert history_again.total_squishes == 1
+
+
+def test_main_status_subcommand_parses_json_flag(monkeypatch):
+    captured = {}
+
+    def fake_cmd_status(as_json, **kwargs):
+        captured["as_json"] = as_json
+
+    monkeypatch.setattr(cli, "cmd_status", fake_cmd_status)
+    cli.main(["status", "--json"])
+
+    assert captured["as_json"] is True
 
 
 def test_draw_does_not_crash_and_does_not_squish_when_stdin_is_not_a_tty(tmp_path, monkeypatch):

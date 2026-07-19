@@ -11,6 +11,7 @@ BASE_STATES = ["healthy", "chewed", "dying", "dead"]
 HEALTHY, CHEWED, DYING, DEAD = range(4)
 
 STATE_PATH = Path.home() / ".tend" / "state.json"
+HISTORY_PATH = Path.home() / ".tend" / "history.json"
 
 
 @dataclass
@@ -35,6 +36,23 @@ class World:
     seeds_spent_this_tick: int = 0
     quiet_ticks: int = 0
     streak: int = 0
+
+
+@dataclass
+class History:
+    """Lifetime trends across sessions. Never rendered in the ASCII art —
+    diagnostic data for whoever asks for it via `tend status --json`, not a
+    score or achievement ladder."""
+
+    total_ticks: int = 0
+    total_squishes: int = 0
+    total_deaths: int = 0
+    total_revivals: int = 0
+    total_urchins_spawned: int = 0
+    longest_quiet_streak: int = 0
+    longest_squish_streak: int = 0
+    biggest_dieoff: int = 0
+    biggest_dieoff_day: int = 0
 
 
 def _stalk_from_dict(data: dict) -> Stalk:
@@ -82,3 +100,34 @@ def save(world: World, path: Path | None = None) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
     with open(target, "w") as f:
         json.dump(asdict(world), f)
+
+
+def _history_from_dict(data: dict) -> History:
+    return History(
+        total_ticks=data.get("total_ticks", 0),
+        total_squishes=data.get("total_squishes", 0),
+        total_deaths=data.get("total_deaths", 0),
+        total_revivals=data.get("total_revivals", 0),
+        total_urchins_spawned=data.get("total_urchins_spawned", 0),
+        longest_quiet_streak=data.get("longest_quiet_streak", 0),
+        longest_squish_streak=data.get("longest_squish_streak", 0),
+        biggest_dieoff=data.get("biggest_dieoff", 0),
+        biggest_dieoff_day=data.get("biggest_dieoff_day", 0),
+    )
+
+
+def load_history(path: Path | None = None) -> History:
+    target = path or HISTORY_PATH
+    try:
+        with open(target) as f:
+            data = json.load(f)
+        return _history_from_dict(data)
+    except Exception:
+        return History()
+
+
+def save_history(history: History, path: Path | None = None) -> None:
+    target = path or HISTORY_PATH
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with open(target, "w") as f:
+        json.dump(asdict(history), f)
