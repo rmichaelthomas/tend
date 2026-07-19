@@ -41,6 +41,18 @@ def _read_key() -> str:
     return ch
 
 
+def _apply_squish(world: state.World, index: int, console=None) -> None:
+    had_urchins = world.stalks[index].urchins > 0
+    engine.squish(world, index)
+    if had_urchins:
+        world.streak += 1
+        if console is not None:
+            feel.animate_squish(console, world, index, render.render_frame, cleared_count=1)
+    world.chewed_this_tick = [i for i in world.chewed_this_tick if i != index]
+    world.spawned_indices_this_tick = [i for i in world.spawned_indices_this_tick if i != index]
+    world.last_event = message.build(world)
+
+
 def cmd_draw(state_path: Path | None = None) -> None:
     from rich.console import Console
 
@@ -52,17 +64,24 @@ def cmd_draw(state_path: Path | None = None) -> None:
     key = _read_key()
     if key and key in "1234567":
         index = int(key) - 1
-        had_urchins = world.stalks[index].urchins > 0
-        engine.squish(world, index)
-        if had_urchins:
-            world.streak += 1
-            feel.animate_squish(console, world, index, render.render_frame, cleared_count=1)
-        world.chewed_this_tick = [i for i in world.chewed_this_tick if i != index]
-        world.spawned_indices_this_tick = [i for i in world.spawned_indices_this_tick if i != index]
-        world.last_event = message.build(world)
+        _apply_squish(world, index, console=console)
         state.save(world, state_path)
         tier = feel.streak_tier(world.streak)
         sys.stdout.write(render.render_frame(world, tier=tier))
+
+
+def cmd_squish(index: int, state_path: Path | None = None) -> None:
+    """Non-interactive squish: no keypress, no animation. For a caller (e.g.
+    an assistant relaying a chat reply) that has no live terminal to read a
+    key from or animate into."""
+    world = state.load(state_path)
+    if not (0 <= index < len(world.stalks)):
+        return
+
+    _apply_squish(world, index)
+    state.save(world, state_path)
+    tier = feel.streak_tier(world.streak)
+    sys.stdout.write(render.render_frame(world, tier=tier))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -73,6 +92,9 @@ def main(argv: list[str] | None = None) -> int:
     tick_parser.add_argument("--transcript", default=None)
 
     subparsers.add_parser("draw")
+
+    squish_parser = subparsers.add_parser("squish")
+    squish_parser.add_argument("stalk", type=int)
 
     args = parser.parse_args(argv)
 
@@ -90,6 +112,10 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "draw":
         cmd_draw()
+        return 0
+
+    if args.command == "squish":
+        cmd_squish(args.stalk - 1)
         return 0
 
     return 1

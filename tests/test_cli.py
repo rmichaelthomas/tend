@@ -162,6 +162,80 @@ def test_draw_header_not_corrupted_by_large_spend_number(tmp_path, monkeypatch, 
     assert "7635" in first_line
 
 
+def test_squish_command_clears_urchins_and_increments_streak(tmp_path, capsys):
+    state_path = tmp_path / "state.json"
+    world = state.World()
+    world.stalks[2].urchins = 2
+    state.save(world, state_path)
+
+    cli.cmd_squish(2, state_path=state_path)
+
+    updated = state.load(state_path)
+    assert updated.stalks[2].urchins == 0
+    assert updated.streak == 1
+    captured = capsys.readouterr()
+    assert captured.out != ""
+
+
+def test_squish_command_does_not_increment_streak_on_empty_stalk(tmp_path):
+    state_path = tmp_path / "state.json"
+    state.save(state.World(), state_path)
+
+    cli.cmd_squish(0, state_path=state_path)
+
+    updated = state.load(state_path)
+    assert updated.streak == 0
+
+
+def test_squish_command_out_of_range_index_is_a_noop(tmp_path, capsys):
+    state_path = tmp_path / "state.json"
+    world = state.World()
+    world.stalks[0].urchins = 1
+    state.save(world, state_path)
+
+    cli.cmd_squish(99, state_path=state_path)
+
+    updated = state.load(state_path)
+    assert updated.stalks[0].urchins == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+
+
+def test_squish_command_does_not_stale_the_message_it_clears(tmp_path):
+    from tend import message
+    from tend.state import CHEWED
+
+    state_path = tmp_path / "state.json"
+    world = state.World()
+    world.stalks[4].base = CHEWED
+    world.stalks[4].urchins = 1
+    world.chewed_this_tick = [4]
+    state.save(world, state_path)
+
+    cli.cmd_squish(4, state_path=state_path)
+
+    updated = state.load(state_path)
+    assert updated.last_event != "5 is being chewed. press 5."
+    assert updated.last_event == message.build(updated)
+
+
+def test_main_squish_subcommand_parses_stalk_and_squishes(tmp_path, monkeypatch):
+    state_path = tmp_path / "state.json"
+    world = state.World()
+    world.stalks[5].urchins = 1
+    state.save(world, state_path)
+
+    captured_index = {}
+
+    def fake_cmd_squish(index, state_path=None):
+        captured_index["index"] = index
+
+    monkeypatch.setattr(cli, "cmd_squish", fake_cmd_squish)
+    cli.main(["squish", "6"])
+
+    assert captured_index["index"] == 5
+
+
 def test_draw_does_not_crash_and_does_not_squish_when_stdin_is_not_a_tty(tmp_path, monkeypatch):
     import io
 
