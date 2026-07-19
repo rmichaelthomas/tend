@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <defs>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#12587a"/>
+      <stop offset="55%" stop-color="#0a2f47"/>
+      <stop offset="100%" stop-color="#04141f"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="640" fill="#04141f"/>
+  <text x="112" y="230" font-family="ui-monospace, Menlo, 'Fira Code', monospace" font-size="150" font-weight="700" fill="#6fd66f">tend</text>
+  <text x="114" y="300" font-family="ui-monospace, Menlo, 'Fira Code', monospace" font-size="32" fill="#c9d8de">A kelp garden that grows from your Claude Code</text>
+  <text x="114" y="344" font-family="ui-monospace, Menlo, 'Fira Code', monospace" font-size="32" fill="#c9d8de">session's own token usage. No score, just a glance.</text>
+  <rect x="90" y="380" width="1100" height="230" rx="24" fill="url(#water)"/>
+  <rect x="100" y="500" width="125" height="90" rx="10" fill="#6fd66f"/><rect x="255" y="530" width="125" height="60" rx="10" fill="#6fd66f"/><rect x="410" y="460" width="125" height="130" rx="10" fill="#6fd66f"/><rect x="565" y="550" width="125" height="40" rx="10" fill="#6fd66f"/><rect x="720" y="420" width="125" height="170" rx="10" fill="#6fd66f"/><rect x="875" y="520" width="125" height="70" rx="10" fill="#6fd66f"/><rect x="1030" y="480" width="125" height="110" rx="10" fill="#6fd66f"/>
+  <circle cx="472.5" cy="438" r="11" fill="#c9d94a"/><circle cx="782.5" cy="398" r="11" fill="#c9d94a"/>
+</svg>
