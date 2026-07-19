@@ -1,8 +1,23 @@
 # tend
 
+[![License: MIT](https://img.shields.io/github/license/rmichaelthomas/tend)](LICENSE)
+![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
+![Claude Code](https://img.shields.io/badge/claude%20code-hook%20%2B%20skill-5A67D8)
+
 A small terminal toy that grows out of a Claude Code session's own token
 usage. No score, no achievements, nothing it's trying to get you to do —
 just something to glance at.
+
+## Preview
+
+<img src="assets/hero.svg" alt="tend: seven stalks in calm water, a quiet day-22 check-in" width="600">
+
+Same picture, worse day — one washed out, one dying, one under attack:
+
+<img src="assets/trouble.svg" alt="tend: one stalk dead, one dying with urchins, one chewed" width="600">
+
+Both are real output — `tend`'s own renderer, captured straight to SVG
+(`assets/generate.py`), not mockups.
 
 ## Install
 
@@ -198,7 +213,11 @@ pip install -e ".[dev]"
 pytest
 ```
 
-`docs/superpowers/plans/2026-07-18-tend-core.md` is the original build plan
-— a historical record of the initial implementation, not a live spec.
-Everything since has been driven by actually using the thing and fixing
-what didn't hold up; `git log` and the source are the current truth.
+`assets/generate.py` regenerates the two screenshots above from the real
+`render.py`/`state.py` code whenever the look of the game changes — it's a
+repo-maintenance script, not part of the package or its tests.
+
+There's no live spec document — the original build plan was a starting
+point, not a contract, and everything since has been driven by actually
+using the thing and fixing what didn't hold up. `git log` and the source
+are the current truth.

@@ -11,3 +11,4 @@ dist/
 venv/
 .DS_Store
 .superpowers/
+docs/superpowers/
