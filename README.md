@@ -4,9 +4,12 @@
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
 ![Claude Code](https://img.shields.io/badge/claude%20code-hook%20%2B%20skill-5A67D8)
 
-A small terminal toy that grows out of a Claude Code session's own token
-usage. No score, no achievements, nothing it's trying to get you to do —
-just something to glance at.
+tend is a tiny kelp garden that grows behind your Claude Code sessions —
+seven stalks in a strip of tide pool, fed by nothing but the tokens the
+session actually spends. Sea urchins turn up and start chewing on stalks;
+you can squish them off, or not. A small terminal toy that grows out of a
+Claude Code session's own token usage — no score, no achievements, nothing
+it's trying to get you to do, just something to glance at.
 
 ## Preview
 
@@ -18,6 +21,40 @@ Same picture, worse day — one washed out, one dying, one under attack:
 
 Both are real output — `tend`'s own renderer, captured straight to SVG
 (`assets/generate.py`), not mockups.
+
+## What you're looking at
+
+Seven stalks of kelp, growing in a strip of tide pool water. Nothing here
+needs a manual — but in plain English, not code:
+
+- **The kelp grows** while your Claude Code session is working — the more
+  it writes back to you, the taller the stalks get. Stuff happens because
+  you were actually doing something, not because you fed the toy on
+  purpose. There's no way to grow it by hand.
+- **Sea urchins** are the little dots that show up on stalks — driven by
+  how much the session leans on prompt caching. Once one lands, it starts
+  eating: a healthy stalk (green) turns chewed (orange), then dying (red),
+  then gone — dark and "washed out" — if nobody deals with it.
+- **Squishing** an urchin off a stalk is the only thing you ever do here.
+  At a real terminal, press its number. In a chat check-in, just say the
+  number back. It's free, it's instant, and it's the whole game.
+- **Seeds** are currency, earned quietly in the background just from the
+  session re-reading its own cached context. Enough banked seeds bring a
+  washed-out stalk back — small, and starting over.
+- **The water** gets a little brighter the more consistently you've been
+  squishing urchins when they show up, and fades back down if you stop.
+  It's mood lighting, not a score — it doesn't change anything else.
+- **The number labeled "tokens"** in the corner is a running lifetime total
+  of everything the session has spent. It shifts from green to orange to
+  red as it climbs. Nothing happens because of that color; it's just there.
+- **The one line of text at the bottom** is the only narration you get —
+  whatever's most urgent, worst first ("2 is being chewed, press 2"), or a
+  quiet note if nothing much is going on.
+
+None of it needs tending, despite the name. Ignore it for a week and come
+back — some stalks might have washed out, but nothing was ever keeping
+score while you were gone. Everything past this point is the exact
+mechanical version of the same story, for anyone who wants the numbers.
 
 ## Install
 
