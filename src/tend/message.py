@@ -40,7 +40,10 @@ def build(world: World) -> str:
             return f"{n} washed out. seeds -{world.seeds_spent_this_tick}. {m} is next."
         return f"{n} washed out. seeds -{world.seeds_spent_this_tick}."
 
-    dying = [i for i, s in enumerate(world.stalks) if s.base == DYING]
+    # Only claims imminent death when the stalk is actually still being
+    # chewed — dying with zero urchins can't advance to dead next tick,
+    # so the warning would be a false promise.
+    dying = [i for i, s in enumerate(world.stalks) if s.base == DYING and s.urchins > 0]
     if dying:
         n = min(dying) + 1
         return f"{n} goes next tick unless you press {n}."
@@ -65,6 +68,11 @@ def build(world: World) -> str:
 
     if world.quiet_ticks >= QUIET_TICKS_THRESHOLD:
         return "quiet. nothing's happened in a while."
+
+    fragile = sorted(i for i, s in enumerate(world.stalks) if s.base == DYING and s.urchins == 0)
+    if fragile:
+        n = min(fragile) + 1
+        return f"quiet. {n} is still fragile."
 
     tall = sorted(i for i, s in enumerate(world.stalks) if s.height >= TALL_THRESHOLD)
     if tall:

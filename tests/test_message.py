@@ -30,10 +30,18 @@ def test_priority_1_wins_over_priority_2_when_both_hold():
     assert build(world) == "2 washed out. no seeds left. it stays gone."
 
 
-def test_priority_3_dying():
+def test_priority_3_dying_with_urchins_still_attacking():
     world = _world()
     world.stalks[3].base = DYING
+    world.stalks[3].urchins = 1
     assert build(world) == "4 goes next tick unless you press 4."
+
+
+def test_priority_3_does_not_overclaim_when_dying_stalk_has_no_urchins():
+    world = _world()
+    world.stalks[3].base = DYING
+    world.stalks[3].urchins = 0
+    assert build(world) == "quiet. 4 is still fragile."
 
 
 def test_priority_4_many_urchins_spawned():
@@ -58,6 +66,21 @@ def test_priority_6_one_chewed():
 
 def test_priority_7_quiet_no_activity():
     world = _world(quiet_ticks=5)
+    assert build(world) == "quiet. nothing's happened in a while."
+
+
+def test_fragile_wins_over_tall_in_the_default_tier():
+    world = _world()
+    world.stalks[3].base = DYING
+    world.stalks[3].urchins = 0
+    world.stalks[5].height = 7
+    assert build(world) == "quiet. 4 is still fragile."
+
+
+def test_quiet_no_activity_wins_over_fragile():
+    world = _world(quiet_ticks=5)
+    world.stalks[3].base = DYING
+    world.stalks[3].urchins = 0
     assert build(world) == "quiet. nothing's happened in a while."
 
 
