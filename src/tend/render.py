@@ -24,8 +24,8 @@ BURNT = "#3c1f1c"
 BASE_SYMBOLS = {0: "▓", 1: "▒", 2: "░", 3: "×"}
 BASE_COLORS = {0: KELP, 1: CHEWED_COLOR, 2: DYING_COLOR, 3: BURNT}
 
-SPEND_WARM = 1_000_000
-SPEND_HOT = 3_000_000
+SPEND_WARM = 10_000_000
+SPEND_HOT = 50_000_000
 
 TIER_BRIGHTEN = {0: 0.0, 1: 0.06, 2: 0.12, 3: 0.18}
 
@@ -68,11 +68,12 @@ def render_frame(
 
     spend_str = f"{world.spend:,}"
     header_left = f" day {world.day}"
-    header_right = f"{spend_str} · seeds {world.seeds}"
+    header_right = f"tokens {spend_str} · seeds {world.seeds}"
     total_width = STALK_COUNT * BLOCK_WIDTH + (STALK_COUNT - 1)
     pad = max(1, total_width + 12 - len(header_left) - len(header_right))
     text.append(header_left)
     text.append(" " * pad)
+    text.append("tokens ")
     text.append(spend_str, style=_spend_color(world.spend))
     text.append(" · seeds ")
     text.append(str(world.seeds), style=SEED_COLOR)
