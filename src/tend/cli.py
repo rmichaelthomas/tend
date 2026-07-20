@@ -134,19 +134,60 @@ def cmd_status(as_json: bool, state_path: Path | None = None, history_path: Path
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="tend")
+    parser = argparse.ArgumentParser(
+        prog="tend",
+        description=(
+            "tend — a tiny kelp garden that grows from your Claude Code "
+            "session's own token usage. Urchins show up and chew on stalks; "
+            "squish them off, or don't. See README.md for the full mechanics."
+        ),
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    tick_parser = subparsers.add_parser("tick")
-    tick_parser.add_argument("--transcript", default=None)
+    tick_parser = subparsers.add_parser(
+        "tick",
+        help="advance the world from a transcript delta (used by the Stop hook; not meant to be run by hand)",
+        description=(
+            "Advance the world from a transcript delta. Driven by the Stop "
+            "hook; not meant to be run by hand."
+        ),
+    )
+    tick_parser.add_argument(
+        "--transcript",
+        default=None,
+        help=(
+            "path to the session transcript JSONL file to read a delta from; "
+            "if omitted, reads a {\"transcript_path\": ...} JSON object from stdin"
+        ),
+    )
 
-    subparsers.add_parser("draw")
+    subparsers.add_parser(
+        "draw",
+        help="interactive: print, wait for a keypress to squish, print again (real terminal only)",
+        description=(
+            "Interactive: print the picture, wait for one keypress (1-7 "
+            "squishes, anything else exits), print the result. Real "
+            "terminal only."
+        ),
+    )
 
-    squish_parser = subparsers.add_parser("squish")
-    squish_parser.add_argument("stalk", type=int)
+    squish_parser = subparsers.add_parser(
+        "squish",
+        help="clear the urchins on stalk N (1-7), non-interactively",
+        description="Clear the urchins on stalk N (1-7), non-interactively.",
+    )
+    squish_parser.add_argument("stalk", type=int, help="which stalk to clear (1-7)")
 
-    status_parser = subparsers.add_parser("status")
-    status_parser.add_argument("--json", action="store_true")
+    status_parser = subparsers.add_parser(
+        "status",
+        help="read-only peek at the picture, or full state as JSON with --json",
+        description="Read-only peek at the current picture; never changes state.",
+    )
+    status_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="print the full state plus lifetime history as JSON instead of the picture",
+    )
 
     args = parser.parse_args(argv)
 
