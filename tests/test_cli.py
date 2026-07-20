@@ -21,7 +21,7 @@ def test_tick_advances_state_and_stays_under_100ms(tmp_path):
     assert elapsed_ms < 100
     updated = state.load(state_path)
     assert updated.spend > 0
-    assert updated.last_offset == FIXTURE.stat().st_size
+    assert updated.offsets[str(FIXTURE)] == FIXTURE.stat().st_size
     assert updated.last_event != ""
 
 
@@ -35,6 +35,32 @@ def test_tick_is_idempotent_once_offset_reaches_eof(tmp_path):
     second = state.load(state_path)
 
     assert second.spend == first.spend
+
+
+def test_tick_tracks_offset_per_transcript_not_globally(tmp_path):
+    """A new Claude Code session gets its own transcript file starting at
+    byte 0. If tend tracked one global offset, ticking a long-lived
+    session's transcript first (advancing the offset past this short one's
+    total length) would make every later tick against the new transcript
+    read zero bytes -- seek() past EOF returns no data, not an error -- so
+    real usage in the new session would never be recorded."""
+    state_path = tmp_path / "state.json"
+    state.save(state.World(), state_path)
+
+    cli.cmd_tick(str(FIXTURE), state_path=state_path)
+    after_first = state.load(state_path)
+    assert after_first.spend > 0
+
+    other_session = tmp_path / "other_session.jsonl"
+    other_session.write_text(
+        '{"type":"assistant","message":{"usage":{"input_tokens":10,"output_tokens":1000}}}\n'
+    )
+    assert other_session.stat().st_size < FIXTURE.stat().st_size
+
+    cli.cmd_tick(str(other_session), state_path=state_path)
+    after_second = state.load(state_path)
+
+    assert after_second.spend > after_first.spend
 
 
 def test_stop_hook_exits_zero_even_without_tend_on_path(tmp_path):

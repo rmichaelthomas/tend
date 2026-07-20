@@ -27,7 +27,7 @@ class World:
     spend: int = 0
     seeds: int = 0
     stalks: list[Stalk] = field(default_factory=lambda: [Stalk() for _ in range(STALK_COUNT)])
-    last_offset: int = 0
+    offsets: dict[str, int] = field(default_factory=dict)
     last_event: str = ""
     spawned_indices_this_tick: list[int] = field(default_factory=list)
     chewed_this_tick: list[int] = field(default_factory=list)
@@ -73,7 +73,7 @@ def _world_from_dict(data: dict) -> World:
         spend=data.get("spend", 0),
         seeds=data.get("seeds", 0),
         stalks=stalks,
-        last_offset=data.get("last_offset", 0),
+        offsets=data.get("offsets", {}),
         last_event=data.get("last_event", ""),
         spawned_indices_this_tick=data.get("spawned_indices_this_tick", []),
         chewed_this_tick=data.get("chewed_this_tick", []),

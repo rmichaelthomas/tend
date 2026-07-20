@@ -24,8 +24,8 @@ def _record_tick_history(world: state.World, history: state.History) -> None:
 
 def cmd_tick(transcript_path: str, state_path: Path | None = None, history_path: Path | None = None) -> None:
     world = state.load(state_path)
-    delta, new_offset = transcript.read_delta(transcript_path, world.last_offset)
-    world.last_offset = new_offset
+    delta, new_offset = transcript.read_delta(transcript_path, world.offsets.get(transcript_path, 0))
+    world.offsets[transcript_path] = new_offset
     engine.tick(world, delta)
     world.streak = max(0, world.streak - 1)
     world.last_event = message.build(world)
