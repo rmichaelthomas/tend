@@ -12,3 +12,6 @@ venv/
 .DS_Store
 .superpowers/
 docs/superpowers/
+# Internal planning files: kept locally, copied to the vault
+/docs/history/
+/docs/checkpoints/
